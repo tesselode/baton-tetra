@@ -9,6 +9,7 @@ use crate::{
 
 pub struct ControlConfig<ControlKind: Enum<Vec<InputSource>>> {
 	pub control_sources: EnumMap<ControlKind, Vec<InputSource>>,
+	pub gamepad_id: Option<usize>,
 	pub deadzone: f32,
 	pub deadzone_shape: PairDeadzoneShape,
 }
@@ -17,10 +18,9 @@ pub struct PlayerInput<
 	ControlKind: Enum<Control> + Enum<Vec<InputSource>>,
 	PairKind: PairKindTrait<ControlKind> = DefaultPairKind,
 > {
-	config: ControlConfig<ControlKind>,
+	pub config: ControlConfig<ControlKind>,
 	controls: EnumMap<ControlKind, Control>,
 	pairs: EnumMap<PairKind, Pair>,
-	gamepad_id: Option<usize>,
 	active_input_kind: Option<InputKind>,
 }
 
@@ -32,7 +32,6 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 			config,
 			controls: Default::default(),
 			pairs: Default::default(),
-			gamepad_id: None,
 			active_input_kind: None,
 		}
 	}
@@ -50,7 +49,7 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 	}
 
 	pub fn set_gamepad(&mut self, id: impl Into<Option<usize>>) {
-		self.gamepad_id = id.into();
+		self.config.gamepad_id = id.into();
 	}
 
 	/// Updates the active input kind (keyboard or gamepad).
@@ -67,7 +66,7 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 		let mut gamepad_active = false;
 		for (_, sources) in &self.config.control_sources {
 			for source in sources {
-				if source.get(ctx, self.gamepad_id) >= self.config.deadzone {
+				if source.get(ctx, self.config.gamepad_id) >= self.config.deadzone {
 					if source.kind() == InputKind::Keyboard {
 						self.active_input_kind = Some(InputKind::Keyboard);
 						return;
@@ -87,7 +86,7 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 		for (kind, control) in &mut self.controls {
 			control.update(
 				ctx,
-				self.gamepad_id,
+				self.config.gamepad_id,
 				&self.config.control_sources[kind],
 				self.config.deadzone,
 				self.active_input_kind,
