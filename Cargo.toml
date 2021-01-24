@@ -1,0 +1,2 @@
+[workspace]
+members = ["baton-tetra", "baton-tetra-test"]
