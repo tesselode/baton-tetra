@@ -64,6 +64,7 @@ name = "baton-tetra"
 version = "0.1.0"
 dependencies = [
  "enum-map",
+ "serde",
  "tetra",
 ]
 
@@ -295,6 +296,7 @@ checksum = "4187999839f4ae8be35cf185d1381aa8dc32d2f5951349cc37ae49ebc4781855"
 dependencies = [
  "array-macro",
  "enum-map-derive",
+ "serde",
 ]
 
 [[package]]
@@ -731,6 +733,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
+name = "serde"
+version = "1.0.121"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6159e3c76cab06f6bc466244d43b35e77e9500cd685da87620addadc2a4c40b1"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.121"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3fcab8778dc651bc65cfab2e4eb64996f3c912b74002fb379c94517e1f27c46"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "shlex"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -790,6 +812,7 @@ dependencies = [
  "num-traits",
  "rodio",
  "sdl2",
+ "serde",
  "unicode-normalization",
  "vek",
 ]
@@ -860,6 +883,7 @@ dependencies = [
  "num-integer",
  "num-traits",
  "rustc_version",
+ "serde",
  "static_assertions",
 ]
 
