@@ -4,7 +4,7 @@ use tetra::math::Vec2;
 use crate::control::Control;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PairDeadzoneShape {
+pub enum DeadzoneShape {
 	Square,
 	Circle,
 }
@@ -42,7 +42,7 @@ impl Pair {
 		up: &Control,
 		down: &Control,
 		deadzone: f32,
-		deadzone_shape: PairDeadzoneShape,
+		deadzone_shape: DeadzoneShape,
 	) {
 		self.raw_value.x = right.raw_value() - left.raw_value();
 		self.raw_value.y = down.raw_value() - up.raw_value();
@@ -50,7 +50,7 @@ impl Pair {
 			self.raw_value.normalize();
 		}
 		match deadzone_shape {
-			PairDeadzoneShape::Square => {
+			DeadzoneShape::Square => {
 				self.value.x = if self.raw_value.x.abs() >= deadzone {
 					self.raw_value.x
 				} else {
@@ -62,7 +62,7 @@ impl Pair {
 					0.0
 				};
 			}
-			PairDeadzoneShape::Circle => {
+			DeadzoneShape::Circle => {
 				self.value = if self.raw_value.magnitude_squared() >= deadzone.powi(2) {
 					self.raw_value
 				} else {

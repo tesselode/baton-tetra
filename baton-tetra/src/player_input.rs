@@ -3,7 +3,7 @@ use tetra::Context;
 
 use crate::{
 	control::Control,
-	pair::{DefaultPairKind, Pair, PairDeadzoneShape, PairKindTrait},
+	pair::{DeadzoneShape, DefaultPairKind, Pair, PairKindTrait},
 	source::{InputKind, InputSource},
 };
 
@@ -11,7 +11,7 @@ pub struct ControlConfig<ControlKind: Enum<Vec<InputSource>>> {
 	pub control_sources: EnumMap<ControlKind, Vec<InputSource>>,
 	pub gamepad_id: Option<usize>,
 	pub deadzone: f32,
-	pub deadzone_shape: PairDeadzoneShape,
+	pub deadzone_shape: DeadzoneShape,
 }
 
 pub struct PlayerInput<
