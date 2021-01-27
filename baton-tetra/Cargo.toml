@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 enum-map = "0.6.4"
 serde = {version = "1.0.121", optional = true, features = ["derive"]}
-tetra = "0.5.7"
+tetra = {version = "0.5.8", default-features = false}
 
 [features]
 serde_support = ["serde", "enum-map/serde", "tetra/serde_support"]
