@@ -3,19 +3,25 @@ use tetra::{
 	Context,
 };
 
+/// Categories of input.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum InputKind {
 	Keyboard,
 	Gamepad,
 }
 
+/// A direction an axis can be moved in.
 #[cfg_attr(
 	feature = "serde_support",
 	derive(serde::Serialize, serde::Deserialize)
 )]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AxisDirection {
+	/// The negative direction, i.e. left or up on a gamepad
+	/// stick.
 	Negative,
+	/// The positive direction, i.e. right or down on a gamepad
+	/// stick.
 	Positive,
 }
 
@@ -28,14 +34,18 @@ impl AxisDirection {
 	}
 }
 
+/// A source of data from a hardware input device.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(
 	feature = "serde_support",
 	derive(serde::Serialize, serde::Deserialize)
 )]
 pub enum InputSource {
+	/// A keyboard key.
 	Key(Key),
+	/// A button on a gamepad.
 	Button(GamepadButton),
+	/// A gamepad axis filtered to movement in one direction.
 	Axis(GamepadAxis, AxisDirection),
 }
 

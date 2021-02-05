@@ -7,17 +7,29 @@ use crate::{
 	source::{InputKind, InputSource},
 };
 
+/// Settings for a [`PlayerInput`].
 pub struct ControlConfig<ControlKind: Enum<Vec<InputSource>>> {
+	/// The input sources used for each control.
+	///
+	/// This is a mapping from hardware input devices to the
+	/// actions in the game.
 	pub control_sources: EnumMap<ControlKind, Vec<InputSource>>,
+	/// Whether this player will receive gamepad input,
+	/// and if so, which gamepad to receive it from.
 	pub gamepad_id: Option<usize>,
+	/// The deadzone for analog controls. This should be a number
+	/// between 0 and 1.
 	pub deadzone: f32,
+	/// The shape of the deadzone used for axis pairs.
 	pub deadzone_shape: DeadzoneShape,
 }
 
+/// Collects input data for a single player.
 pub struct PlayerInput<
 	ControlKind: Enum<Control> + Enum<Vec<InputSource>>,
 	PairKind: PairKindTrait<ControlKind> = DefaultPairKind,
 > {
+	/// Settings for the [`PlayerInput`].
 	pub config: ControlConfig<ControlKind>,
 	controls: EnumMap<ControlKind, Control>,
 	pairs: EnumMap<PairKind, Pair>,
@@ -27,6 +39,7 @@ pub struct PlayerInput<
 impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrait<ControlKind>>
 	PlayerInput<ControlKind, PairKind>
 {
+	/// Creates a new [`PlayerInput`].
 	pub fn new(config: ControlConfig<ControlKind>) -> Self {
 		Self {
 			config,
@@ -36,18 +49,28 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 		}
 	}
 
+	/// Returns the most recently used input kind, or `None`
+	/// if no input devices have been used yet.
+	///
+	/// Knowing what device the player used last is useful
+	/// for some situations, such as showing different
+	/// instructions about controls depending on what
+	/// device they're using.
 	pub fn active_input_kind(&self) -> Option<InputKind> {
 		self.active_input_kind
 	}
 
+	/// Returns a reference to the control of the specified kind.
 	pub fn control(&self, kind: ControlKind) -> &Control {
 		&self.controls[kind]
 	}
 
+	/// Returns a reference to the pair of the specified kind.
 	pub fn pair(&self, kind: PairKind) -> &Pair {
 		&self.pairs[kind]
 	}
 
+	/// Assigns a gamepad to the [`PlayerInput`].
 	pub fn set_gamepad(&mut self, id: impl Into<Option<usize>>) {
 		self.config.gamepad_id = id.into();
 	}
@@ -81,6 +104,7 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 		}
 	}
 
+	/// Updates the [`PlayerInput`] with the input data for this frame.
 	pub fn update(&mut self, ctx: &Context) {
 		self.update_active_input_kind(ctx);
 		for (kind, control) in &mut self.controls {

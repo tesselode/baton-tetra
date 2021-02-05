@@ -13,6 +13,10 @@ pub trait PairKindTrait<ControlKind>: Enum<Pair> {
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind);
 }
 
+/// The default pair kind used if you don't specify one
+/// for a [`PlayerInput`](crate::player_input::PlayerInput).
+///
+/// This enum does not defined any pair kinds.
 #[derive(Enum)]
 pub enum DefaultPairKind {}
 
@@ -22,6 +26,7 @@ impl<ControlKind> PairKindTrait<ControlKind> for DefaultPairKind {
 	}
 }
 
+/// Input data for a horizontal and vertical axis.
 pub struct Pair {
 	raw_value: Vec2<f32>,
 	value: Vec2<f32>,
@@ -72,10 +77,12 @@ impl Pair {
 		}
 	}
 
+	/// Returns the value of the pair without deadzone applied.
 	pub fn raw_value(&self) -> Vec2<f32> {
 		self.raw_value
 	}
 
+	/// Returns the value of the pair with deadzone applied.
 	pub fn value(&self) -> Vec2<f32> {
 		self.value
 	}

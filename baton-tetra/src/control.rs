@@ -2,6 +2,7 @@ use tetra::Context;
 
 use crate::source::{InputKind, InputSource};
 
+/// Input data for an in-game control.
 pub struct Control {
 	raw_value: f32,
 	value: f32,
@@ -52,22 +53,30 @@ impl Control {
 		self.released = down_previous && !self.down;
 	}
 
+	/// Returns the value of the control without deadzone applied.
 	pub fn raw_value(&self) -> f32 {
 		self.raw_value
 	}
 
+	/// Returns the value of the control with deadzone applied.
 	pub fn value(&self) -> f32 {
 		self.value
 	}
 
+	/// Returns true if the control is currently held down,
+	/// i.e. its value is greater than or equal to the deadzone.
 	pub fn down(&self) -> bool {
 		self.down
 	}
 
+	/// Returns true if the control started being held down
+	/// this frame.
 	pub fn pressed(&self) -> bool {
 		self.pressed
 	}
 
+	/// Returns true if the control stopped being held down
+	/// this frame.
 	pub fn released(&self) -> bool {
 		self.released
 	}
