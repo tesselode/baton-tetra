@@ -1,6 +1,6 @@
 use baton_tetra::{
 	enum_map::{self, Enum},
-	pair::PairDeadzoneShape,
+	pair::DeadzoneShape,
 	player_input::PlayerInput,
 	source::AxisDirection,
 };
@@ -65,7 +65,7 @@ impl MainState {
 				},
 				gamepad_id: Some(0),
 				deadzone: 0.25,
-				deadzone_shape: PairDeadzoneShape::Circle,
+				deadzone_shape: DeadzoneShape::Circle,
 			}),
 		}
 	}
