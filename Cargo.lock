@@ -48,6 +48,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "approx"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f2a05fd1bd10b2527e20a2cd32d8873d115b8b39fe219ee25f42a8aca6ba278"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "array-macro"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -71,7 +80,7 @@ version = "0.1.0"
 dependencies = [
  "enum-map",
  "serde",
- "tetra",
+ "tetra 0.6.0",
 ]
 
 [[package]]
@@ -79,7 +88,7 @@ name = "baton-tetra-test"
 version = "0.1.0"
 dependencies = [
  "baton-tetra",
- "tetra",
+ "tetra 0.5.8",
 ]
 
 [[package]]
@@ -868,9 +877,26 @@ dependencies = [
  "num-traits",
  "rodio",
  "sdl2",
+ "unicode-normalization",
+ "vek 0.12.1",
+]
+
+[[package]]
+name = "tetra"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "510d33fafa2a7c3a2bc8eaddab9f1b81f81f64d143f94e70766a1d9b461fa77e"
+dependencies = [
+ "bytemuck",
+ "glow",
+ "hashbrown",
+ "image",
+ "lyon_tessellation",
+ "num-traits",
+ "sdl2",
  "serde",
  "unicode-normalization",
- "vek",
+ "vek 0.13.1",
 ]
 
 [[package]]
@@ -935,7 +961,20 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b5ec6f1e1336c875817faba09752eeac76aa0c51c304b9030cbfcd0daf5e217"
 dependencies = [
- "approx",
+ "approx 0.3.2",
+ "num-integer",
+ "num-traits",
+ "rustc_version",
+ "static_assertions",
+]
+
+[[package]]
+name = "vek"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a016e3cc1cffdb0af42d2a0a1b9483a0768e75ccbd4fc07c5d2439d434185617"
+dependencies = [
+ "approx 0.4.0",
  "num-integer",
  "num-traits",
  "rustc_version",
