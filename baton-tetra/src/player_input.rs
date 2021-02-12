@@ -45,12 +45,30 @@ where
 {
 	/// Creates a new [`PlayerInput`].
 	pub fn new(config: ControlConfig) -> Self {
+		let mut controls = HashMap::new();
+		for kind in ControlKind::kinds() {
+			controls.insert(kind, Control::new());
+		}
+		let mut pairs = HashMap::new();
+		for kind in PairKind::kinds() {
+			pairs.insert(kind, Pair::new());
+		}
 		Self {
 			config,
-			controls: Default::default(),
-			pairs: Default::default(),
+			controls,
+			pairs,
 			active_input_kind: None,
 		}
+	}
+
+	/// Returns a reference to this player's control configuration.
+	pub fn config(&self) -> &ControlConfig {
+		&self.config
+	}
+
+	/// Returns a mutable reference to this player's control configuration.
+	pub fn config_mut(&mut self) -> &mut ControlConfig {
+		&mut self.config
 	}
 
 	/// Returns the most recently used input kind, or `None`
@@ -65,13 +83,13 @@ where
 	}
 
 	/// Returns a reference to the control of the specified kind.
-	pub fn control(&self, kind: ControlKind) -> &Control {
-		self.controls.get(&kind).unwrap()
+	pub fn control(&self, kind: &ControlKind) -> &Control {
+		self.controls.get(kind).unwrap()
 	}
 
 	/// Returns a reference to the pair of the specified kind.
-	pub fn pair(&self, kind: PairKind) -> &Pair {
-		self.pairs.get(&kind).unwrap()
+	pub fn pair(&self, kind: &PairKind) -> &Pair {
+		self.pairs.get(kind).unwrap()
 	}
 
 	/// Updates the active input kind (keyboard or gamepad).
@@ -87,7 +105,7 @@ where
 	fn update_active_input_kind(&mut self, ctx: &Context) {
 		let mut gamepad_active = false;
 		for kind in ControlKind::kinds() {
-			for source in self.config.control_sources(kind) {
+			for source in self.config.control_sources(&kind) {
 				if source.get(ctx, self.config.gamepad_id()) >= self.config.deadzone() {
 					if source.kind() == InputKind::Keyboard {
 						self.active_input_kind = Some(InputKind::Keyboard);

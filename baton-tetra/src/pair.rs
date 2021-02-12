@@ -8,7 +8,9 @@ pub enum DeadzoneShape {
 	Circle,
 }
 
-pub trait PairKindTrait<ControlKind>: Eq + std::hash::Hash {
+pub trait PairKindTrait<ControlKind>: Eq + std::hash::Hash + Sized {
+	fn kinds() -> Vec<Self>;
+
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind);
 }
 
@@ -20,6 +22,10 @@ pub trait PairKindTrait<ControlKind>: Eq + std::hash::Hash {
 pub enum DefaultPairKind {}
 
 impl<ControlKind> PairKindTrait<ControlKind> for DefaultPairKind {
+	fn kinds() -> Vec<Self> {
+		vec![]
+	}
+
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind) {
 		unreachable!()
 	}

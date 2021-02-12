@@ -1,17 +1,14 @@
-use baton_tetra::{
-	enum_map::{self, Enum},
-	pair::DeadzoneShape,
-	player_input::PlayerInput,
-	source::AxisDirection,
-};
-use baton_tetra::{pair::PairKindTrait, player_input::ControlConfig};
-use enum_map::enum_map;
-use tetra::{
-	input::{GamepadAxis, Key},
-	Context, ContextBuilder, State, TetraError,
-};
+use std::error::Error;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Enum)]
+use baton_tetra::{
+	control::ControlKindTrait,
+	pair::PairKindTrait,
+	player_input::{ControlConfigTrait, PlayerInput},
+	source::InputSource,
+};
+use tetra::{input::Key, Context, ContextBuilder, State};
+
+#[derive(PartialEq, Eq, Hash)]
 enum ControlKind {
 	Left,
 	Right,
@@ -19,12 +16,22 @@ enum ControlKind {
 	Down,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Enum)]
+impl ControlKindTrait for ControlKind {
+	fn kinds() -> Vec<Self> {
+		vec![Self::Left, Self::Right, Self::Up, Self::Down]
+	}
+}
+
+#[derive(PartialEq, Eq, Hash)]
 enum PairKind {
 	Move,
 }
 
 impl PairKindTrait<ControlKind> for PairKind {
+	fn kinds() -> Vec<Self> {
+		vec![Self::Move]
+	}
+
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind) {
 		match self {
 			PairKind::Move => (
@@ -37,50 +44,57 @@ impl PairKindTrait<ControlKind> for PairKind {
 	}
 }
 
+struct ControlConfig {
+	left: Vec<InputSource>,
+	right: Vec<InputSource>,
+	up: Vec<InputSource>,
+	down: Vec<InputSource>,
+}
+
+impl ControlConfig {
+	pub fn new() -> Self {
+		Self {
+			left: vec![Key::Left.into()],
+			right: vec![Key::Right.into()],
+			up: vec![Key::Up.into()],
+			down: vec![Key::Down.into()],
+		}
+	}
+}
+
+impl ControlConfigTrait<ControlKind> for ControlConfig {
+	fn control_sources(&self, kind: &ControlKind) -> &[InputSource] {
+		match kind {
+			ControlKind::Left => &self.left,
+			ControlKind::Right => &self.right,
+			ControlKind::Up => &self.up,
+			ControlKind::Down => &self.down,
+		}
+	}
+}
+
 struct MainState {
-	input: PlayerInput<ControlKind, PairKind>,
+	player_input: PlayerInput<ControlKind, ControlConfig, PairKind>,
 }
 
 impl MainState {
 	pub fn new() -> Self {
 		Self {
-			input: PlayerInput::new(ControlConfig {
-				control_sources: enum_map! {
-					ControlKind::Left => vec![
-						Key::Left.into(),
-						(GamepadAxis::LeftStickX, AxisDirection::Negative).into(),
-					],
-					ControlKind::Right => vec![
-						Key::Right.into(),
-						(GamepadAxis::LeftStickX, AxisDirection::Positive).into(),
-					],
-					ControlKind::Up => vec![
-						Key::Up.into(),
-						(GamepadAxis::LeftStickY, AxisDirection::Negative).into(),
-					],
-					ControlKind::Down => vec![
-						Key::Down.into(),
-						(GamepadAxis::LeftStickY, AxisDirection::Positive).into(),
-					],
-				},
-				gamepad_id: Some(0),
-				deadzone: 0.25,
-				deadzone_shape: DeadzoneShape::Circle,
-			}),
+			player_input: PlayerInput::new(ControlConfig::new()),
 		}
 	}
 }
 
-impl State for MainState {
-	fn update(&mut self, ctx: &mut Context) -> Result<(), TetraError> {
-		self.input.update(ctx);
-		println!("{}", self.input.pair(PairKind::Move).value());
+impl State<Box<dyn Error>> for MainState {
+	fn update(&mut self, ctx: &mut Context) -> Result<(), Box<dyn Error>> {
+		self.player_input.update(ctx);
+		println!("{}", self.player_input.pair(&PairKind::Move).value());
 		Ok(())
 	}
 }
 
-fn main() -> tetra::Result {
-	ContextBuilder::new("baton-tetra-test", 800, 600)
+fn main() -> Result<(), Box<dyn Error>> {
+	ContextBuilder::new("baton-tetra-test", 1280, 720)
 		.build()?
 		.run(|_| Ok(MainState::new()))
 }
