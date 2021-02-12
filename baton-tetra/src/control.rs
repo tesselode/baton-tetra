@@ -2,8 +2,8 @@ use tetra::Context;
 
 use crate::source::{InputKind, InputSource};
 
-pub trait ControlKindTrait: Eq + std::hash::Hash + Sized {
-	fn kinds() -> Vec<Self>;
+pub trait ControlKindTrait: Copy + Eq + std::hash::Hash + Sized + 'static {
+	fn kinds() -> &'static [Self];
 }
 
 /// Input data for an in-game control.

@@ -8,7 +8,7 @@ use baton_tetra::{
 };
 use tetra::{input::Key, Context, ContextBuilder, State};
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum ControlKind {
 	Left,
 	Right,
@@ -17,19 +17,19 @@ enum ControlKind {
 }
 
 impl ControlKindTrait for ControlKind {
-	fn kinds() -> Vec<Self> {
-		vec![Self::Left, Self::Right, Self::Up, Self::Down]
+	fn kinds() -> &'static [Self] {
+		&[Self::Left, Self::Right, Self::Up, Self::Down]
 	}
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum PairKind {
 	Move,
 }
 
 impl PairKindTrait<ControlKind> for PairKind {
-	fn kinds() -> Vec<Self> {
-		vec![Self::Move]
+	fn kinds() -> &'static [Self] {
+		&[Self::Move]
 	}
 
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind) {
@@ -88,7 +88,7 @@ impl MainState {
 impl State<Box<dyn Error>> for MainState {
 	fn update(&mut self, ctx: &mut Context) -> Result<(), Box<dyn Error>> {
 		self.player_input.update(ctx);
-		println!("{}", self.player_input.pair(&PairKind::Move).value());
+		println!("{}", self.player_input.pair(PairKind::Move).value());
 		Ok(())
 	}
 }

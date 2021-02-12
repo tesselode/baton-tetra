@@ -8,8 +8,8 @@ pub enum DeadzoneShape {
 	Circle,
 }
 
-pub trait PairKindTrait<ControlKind>: Eq + std::hash::Hash + Sized {
-	fn kinds() -> Vec<Self>;
+pub trait PairKindTrait<ControlKind>: Copy + Eq + std::hash::Hash + Sized + 'static {
+	fn kinds() -> &'static [Self];
 
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind);
 }
@@ -18,12 +18,12 @@ pub trait PairKindTrait<ControlKind>: Eq + std::hash::Hash + Sized {
 /// for a [`PlayerInput`](crate::player_input::PlayerInput).
 ///
 /// This enum does not defined any pair kinds.
-#[derive(PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DefaultPairKind {}
 
 impl<ControlKind> PairKindTrait<ControlKind> for DefaultPairKind {
-	fn kinds() -> Vec<Self> {
-		vec![]
+	fn kinds() -> &'static [Self] {
+		&[]
 	}
 
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind) {
