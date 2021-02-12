@@ -1,4 +1,3 @@
-use enum_map::Enum;
 use tetra::math::Vec2;
 
 use crate::control::Control;
@@ -9,7 +8,7 @@ pub enum DeadzoneShape {
 	Circle,
 }
 
-pub trait PairKindTrait<ControlKind>: Enum<Pair> {
+pub trait PairKindTrait<ControlKind>: Eq + std::hash::Hash {
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind);
 }
 
@@ -17,7 +16,7 @@ pub trait PairKindTrait<ControlKind>: Enum<Pair> {
 /// for a [`PlayerInput`](crate::player_input::PlayerInput).
 ///
 /// This enum does not defined any pair kinds.
-#[derive(Enum)]
+#[derive(PartialEq, Eq, Hash)]
 pub enum DefaultPairKind {}
 
 impl<ControlKind> PairKindTrait<ControlKind> for DefaultPairKind {

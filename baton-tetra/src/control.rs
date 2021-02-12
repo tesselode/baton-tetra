@@ -2,6 +2,10 @@ use tetra::Context;
 
 use crate::source::{InputKind, InputSource};
 
+pub trait ControlKindTrait: Eq + std::hash::Hash + Sized + 'static {
+	fn kinds() -> &'static [Self];
+}
+
 /// Input data for an in-game control.
 pub struct Control {
 	raw_value: f32,
@@ -26,7 +30,7 @@ impl Control {
 		&mut self,
 		ctx: &Context,
 		gamepad_id: Option<usize>,
-		sources: &Vec<InputSource>,
+		sources: &[InputSource],
 		deadzone: f32,
 		active_input_kind: Option<InputKind>,
 	) {

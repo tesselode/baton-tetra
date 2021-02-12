@@ -1,46 +1,50 @@
-use enum_map::{Enum, EnumMap};
+use std::collections::HashMap;
+
 use tetra::Context;
 
 use crate::{
-	control::Control,
+	control::{Control, ControlKindTrait},
 	pair::{DeadzoneShape, DefaultPairKind, Pair, PairKindTrait},
 	source::{InputKind, InputSource},
 };
 
-/// Settings for a [`PlayerInput`].
-pub struct ControlConfig<ControlKind: Enum<Vec<InputSource>>> {
-	/// The input sources used for each control.
-	///
-	/// This is a mapping from hardware input devices to the
-	/// actions in the game.
-	pub control_sources: EnumMap<ControlKind, Vec<InputSource>>,
-	/// Whether this player will receive gamepad input,
-	/// and if so, which gamepad to receive it from.
-	pub gamepad_id: Option<usize>,
-	/// The deadzone for analog controls. This should be a number
-	/// between 0 and 1.
-	pub deadzone: f32,
-	/// The shape of the deadzone used for axis pairs.
-	pub deadzone_shape: DeadzoneShape,
+pub trait ControlConfigTrait<ControlKind: ControlKindTrait> {
+	fn control_sources(&self, kind: &ControlKind) -> &[InputSource];
+
+	fn gamepad_id(&self) -> Option<usize> {
+		None
+	}
+
+	fn deadzone(&self) -> f32 {
+		0.5
+	}
+
+	fn deadzone_shape(&self) -> DeadzoneShape {
+		DeadzoneShape::Circle
+	}
 }
 
 /// Collects input data for a single player.
 pub struct PlayerInput<
-	ControlKind: Enum<Control> + Enum<Vec<InputSource>>,
+	ControlKind: ControlKindTrait,
+	ControlConfig: ControlConfigTrait<ControlKind>,
 	PairKind: PairKindTrait<ControlKind> = DefaultPairKind,
 > {
 	/// Settings for the [`PlayerInput`].
-	pub config: ControlConfig<ControlKind>,
-	controls: EnumMap<ControlKind, Control>,
-	pairs: EnumMap<PairKind, Pair>,
+	pub config: ControlConfig,
+	controls: HashMap<ControlKind, Control>,
+	pairs: HashMap<PairKind, Pair>,
 	active_input_kind: Option<InputKind>,
 }
 
-impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrait<ControlKind>>
-	PlayerInput<ControlKind, PairKind>
+impl<ControlKind, ControlConfig, PairKind> PlayerInput<ControlKind, ControlConfig, PairKind>
+where
+	ControlKind: ControlKindTrait,
+	ControlConfig: ControlConfigTrait<ControlKind>,
+	PairKind: PairKindTrait<ControlKind>,
 {
 	/// Creates a new [`PlayerInput`].
-	pub fn new(config: ControlConfig<ControlKind>) -> Self {
+	pub fn new(config: ControlConfig) -> Self {
 		Self {
 			config,
 			controls: Default::default(),
@@ -62,17 +66,12 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 
 	/// Returns a reference to the control of the specified kind.
 	pub fn control(&self, kind: ControlKind) -> &Control {
-		&self.controls[kind]
+		self.controls.get(&kind).unwrap()
 	}
 
 	/// Returns a reference to the pair of the specified kind.
 	pub fn pair(&self, kind: PairKind) -> &Pair {
-		&self.pairs[kind]
-	}
-
-	/// Assigns a gamepad to the [`PlayerInput`].
-	pub fn set_gamepad(&mut self, id: impl Into<Option<usize>>) {
-		self.config.gamepad_id = id.into();
+		self.pairs.get(&kind).unwrap()
 	}
 
 	/// Updates the active input kind (keyboard or gamepad).
@@ -87,9 +86,9 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 	/// the active device will remain unchanged.
 	fn update_active_input_kind(&mut self, ctx: &Context) {
 		let mut gamepad_active = false;
-		for (_, sources) in &self.config.control_sources {
-			for source in sources {
-				if source.get(ctx, self.config.gamepad_id) >= self.config.deadzone {
+		for kind in ControlKind::kinds() {
+			for source in self.config.control_sources(kind) {
+				if source.get(ctx, self.config.gamepad_id()) >= self.config.deadzone() {
 					if source.kind() == InputKind::Keyboard {
 						self.active_input_kind = Some(InputKind::Keyboard);
 						return;
@@ -110,9 +109,9 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 		for (kind, control) in &mut self.controls {
 			control.update(
 				ctx,
-				self.config.gamepad_id,
-				&self.config.control_sources[kind],
-				self.config.deadzone,
+				self.config.gamepad_id(),
+				self.config.control_sources(kind),
+				self.config.deadzone(),
 				self.active_input_kind,
 			);
 		}
@@ -120,12 +119,12 @@ impl<ControlKind: Enum<Control> + Enum<Vec<InputSource>>, PairKind: PairKindTrai
 			let (left_control_kind, right_control_kind, up_control_kind, down_control_kind) =
 				kind.controls();
 			pair.update(
-				&self.controls[left_control_kind],
-				&self.controls[right_control_kind],
-				&self.controls[up_control_kind],
-				&self.controls[down_control_kind],
-				self.config.deadzone,
-				self.config.deadzone_shape,
+				&self.controls.get(&left_control_kind).unwrap(),
+				&self.controls.get(&right_control_kind).unwrap(),
+				&self.controls.get(&up_control_kind).unwrap(),
+				&self.controls.get(&down_control_kind).unwrap(),
+				self.config.deadzone(),
+				self.config.deadzone_shape(),
 			);
 		}
 	}
