@@ -4,7 +4,7 @@ use baton_tetra::{
 	player_input::{ControlConfigTrait, PlayerInput},
 	source::InputSource,
 };
-use baton_tetra_derive::ControlKind;
+use baton_tetra_derive::{ControlKind, PairKind};
 use tetra::{input::Key, Context, ContextBuilder, State};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ControlKind)]
@@ -15,7 +15,8 @@ enum ControlKind {
 	Down,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PairKind)]
+#[control_kind(ControlKind)]
 enum PairKind {
 	Move,
 }
