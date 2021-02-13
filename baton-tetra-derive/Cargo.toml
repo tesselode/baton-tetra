@@ -1,12 +1,16 @@
 [package]
-name = "baton-tetra-test"
+name = "baton-tetra-derive"
 version = "0.1.0"
 authors = ["Andrew Minnich <aminnich3@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+proc-macro = true
+
 [dependencies]
 baton-tetra = { path = "../baton-tetra" }
-baton-tetra-derive = { path = "../baton-tetra-derive" }
-tetra = "0.6.0"
+proc-macro-error = "1.0.4"
+quote = "1.0.9"
+syn = "1.0.60"

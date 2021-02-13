@@ -1,14 +1,13 @@
 use std::error::Error;
 
 use baton_tetra::{
-	control::ControlKindTrait,
-	pair::PairKindTrait,
 	player_input::{ControlConfigTrait, PlayerInput},
 	source::InputSource,
 };
+use baton_tetra_derive::ControlKind;
 use tetra::{input::Key, Context, ContextBuilder, State};
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ControlKind)]
 enum ControlKind {
 	Left,
 	Right,
@@ -16,32 +15,9 @@ enum ControlKind {
 	Down,
 }
 
-impl ControlKindTrait for ControlKind {
-	fn kinds() -> &'static [Self] {
-		&[Self::Left, Self::Right, Self::Up, Self::Down]
-	}
-}
-
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum PairKind {
 	Move,
-}
-
-impl PairKindTrait<ControlKind> for PairKind {
-	fn kinds() -> &'static [Self] {
-		&[Self::Move]
-	}
-
-	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind) {
-		match self {
-			PairKind::Move => (
-				ControlKind::Left,
-				ControlKind::Right,
-				ControlKind::Up,
-				ControlKind::Down,
-			),
-		}
-	}
 }
 
 struct ControlConfig {
