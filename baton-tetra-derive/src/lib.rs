@@ -38,30 +38,33 @@ pub fn control_kind_derive(input: TokenStream) -> TokenStream {
 pub fn pair_kind_derive(input: TokenStream) -> TokenStream {
 	let input = parse_macro_input!(input as DeriveInput);
 	let name = &input.ident;
-	let control_kind_ident = input
+	let control_kind_attr = input
 		.attrs
 		.iter()
 		.find(|attr| attr.path.is_ident("control_kind"))
-		.map(|attr| {
-			attr.parse_meta().ok().map(|meta| {
-				meta.to_token_stream().into_iter().find_map(|token| {
-					if let TokenTree::Group(group) = token {
-						group.stream().into_iter().find_map(|token| {
-							if let TokenTree::Ident(ident) = token {
-								Some(ident)
-							} else {
-								None
-							}
-						})
-					} else {
-						None
-					}
-				})
+		.unwrap_or_else(|| {
+			abort!(input.span(), "missing control_kind attribute");
+		});
+	let control_kind_ident = control_kind_attr
+		.parse_meta()
+		.map(|meta| {
+			meta.to_token_stream().into_iter().find_map(|token| {
+				if let TokenTree::Group(group) = token {
+					group.stream().into_iter().find_map(|token| {
+						if let TokenTree::Ident(ident) = token {
+							Some(ident)
+						} else {
+							None
+						}
+					})
+				} else {
+					None
+				}
 			})
 		})
+		.ok()
 		.flatten()
-		.flatten()
-		.unwrap_or_else(|| abort!(input.span(), "missing control_kind attribute"));
+		.unwrap_or_else(|| abort!(control_kind_attr.span(), "invalid control_kind attribute"));
 	let variant_idents = if let Data::Enum(data_enum) = &input.data {
 		data_enum.variants.iter().map(|variant| {
 			if variant.fields.len() > 0 {
@@ -76,7 +79,7 @@ pub fn pair_kind_derive(input: TokenStream) -> TokenStream {
 		abort!(input.span(), "PairKind can only be derived for enums");
 	};
 	TokenStream::from(quote! {
-		impl baton_tetra::pair::PairKindTrait for #name {
+		impl baton_tetra::pair::PairKindTrait<#control_kind_ident> for #name {
 			fn kinds() -> &'static [Self] {
 				&[#(Self::#variant_idents),*]
 			}
