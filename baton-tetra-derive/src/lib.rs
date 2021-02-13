@@ -2,9 +2,36 @@ extern crate proc_macro;
 
 use proc_macro_error::{abort, proc_macro_error};
 use quote::{ToTokens, __private::TokenTree, quote};
-use syn::{parse_macro_input, spanned::Spanned, Data, DeriveInput, Ident};
+use syn::{parse_macro_input, spanned::Spanned, Attribute, Data, DeriveInput, Ident};
 
 use crate::proc_macro::TokenStream;
+
+fn get_attr_idents(attr: &Attribute) -> Result<Vec<Ident>, syn::Error> {
+	Ok(attr
+		.parse_meta()?
+		.to_token_stream()
+		.into_iter()
+		.find_map(|token| {
+			if let TokenTree::Group(group) = token {
+				Some(
+					group
+						.stream()
+						.into_iter()
+						.filter_map(|token| {
+							if let TokenTree::Ident(ident) = token {
+								Some(ident)
+							} else {
+								None
+							}
+						})
+						.collect::<Vec<Ident>>(),
+				)
+			} else {
+				None
+			}
+		})
+		.unwrap_or(vec![]))
+}
 
 #[proc_macro_error]
 #[proc_macro_derive(ControlKind)]
@@ -49,26 +76,11 @@ pub fn pair_kind_derive(input: TokenStream) -> TokenStream {
 		.unwrap_or_else(|| {
 			abort!(input.span(), "missing control_kind attribute");
 		});
-	let control_kind_ident = control_kind_attr
-		.parse_meta()
-		.map(|meta| {
-			meta.to_token_stream().into_iter().find_map(|token| {
-				if let TokenTree::Group(group) = token {
-					group.stream().into_iter().find_map(|token| {
-						if let TokenTree::Ident(ident) = token {
-							Some(ident)
-						} else {
-							None
-						}
-					})
-				} else {
-					None
-				}
-			})
-		})
-		.ok()
-		.flatten()
-		.unwrap_or_else(|| abort!(control_kind_attr.span(), "invalid control_kind attribute"));
+	let control_kind_ident = get_attr_idents(control_kind_attr)
+		.unwrap_or_else(|_| abort!(control_kind_attr.span(), "invalid control_kind attribute"))
+		.drain(0..1)
+		.next()
+		.unwrap_or_else(|| abort!(control_kind_attr.span(), "missing control kind"));
 	// for each enum variant, get the name of the variant
 	// plus the four control identifiers in the first group of
 	// the controls attribute
@@ -87,34 +99,8 @@ pub fn pair_kind_derive(input: TokenStream) -> TokenStream {
 				.unwrap_or_else(|| {
 					abort!(variant.span(), "missing controls attribute");
 				});
-			let control_idents = controls_attr
-				.parse_meta()
-				.map(|meta| {
-					meta.to_token_stream().into_iter().find_map(|token| {
-						if let TokenTree::Group(group) = token {
-							Some(
-								group
-									.stream()
-									.into_iter()
-									.filter_map(|token| {
-										if let TokenTree::Ident(ident) = token {
-											Some(ident)
-										} else {
-											None
-										}
-									})
-									.collect::<Vec<Ident>>(),
-							)
-						} else {
-							None
-						}
-					})
-				})
-				.ok()
-				.flatten()
-				.unwrap_or_else(|| {
-					abort!(controls_attr.span(), "invalid controls attribute");
-				});
+			let control_idents = get_attr_idents(controls_attr)
+				.unwrap_or_else(|_| abort!(controls_attr.span(), "invalid controls attribute"));
 			if control_idents.len() != 4 {
 				abort!(
 					controls_attr.span(),

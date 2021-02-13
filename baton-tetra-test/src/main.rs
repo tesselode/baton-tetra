@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use baton_tetra::{
-	pair::PairKindTrait,
 	player_input::{ControlConfigTrait, PlayerInput},
 	source::InputSource,
 };
