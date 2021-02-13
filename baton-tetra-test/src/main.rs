@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use baton_tetra::{
+	pair::PairKindTrait,
 	player_input::{ControlConfigTrait, PlayerInput},
 	source::InputSource,
 };
@@ -18,6 +19,7 @@ enum ControlKind {
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PairKind)]
 #[control_kind(ControlKind)]
 enum PairKind {
+	#[controls(Left, Right, Up, Down)]
 	Move,
 }
 
