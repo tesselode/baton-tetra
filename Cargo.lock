@@ -64,7 +64,7 @@ name = "baton-tetra"
 version = "0.1.0"
 dependencies = [
  "serde",
- "tetra",
+ "tetra 0.6.0 (git+https://github.com/17cupsofcoffee/tetra.git?branch=main)",
 ]
 
 [[package]]
@@ -83,7 +83,7 @@ version = "0.1.0"
 dependencies = [
  "baton-tetra",
  "baton-tetra-derive",
- "tetra",
+ "tetra 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -866,6 +866,22 @@ dependencies = [
  "lyon_tessellation",
  "num-traits",
  "rodio",
+ "sdl2",
+ "unicode-normalization",
+ "vek",
+]
+
+[[package]]
+name = "tetra"
+version = "0.6.0"
+source = "git+https://github.com/17cupsofcoffee/tetra.git?branch=main#2a63d99d09b3bbc0b269e003503f76de8f8801a1"
+dependencies = [
+ "bytemuck",
+ "glow",
+ "hashbrown",
+ "image",
+ "lyon_tessellation",
+ "num-traits",
  "sdl2",
  "serde",
  "unicode-normalization",
