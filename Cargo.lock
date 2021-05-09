@@ -69,7 +69,7 @@ name = "baton-tetra"
 version = "0.1.0"
 dependencies = [
  "serde",
- "tetra",
+ "tetra 0.6.3",
 ]
 
 [[package]]
@@ -88,7 +88,7 @@ version = "0.1.0"
 dependencies = [
  "baton-tetra",
  "baton-tetra-derive",
- "tetra",
+ "tetra 0.6.2",
 ]
 
 [[package]]
@@ -338,6 +338,18 @@ name = "glow"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "363e249e509764031df32a7866e0771656c9fa8d69a349903489b843340cd45e"
+dependencies = [
+ "js-sys",
+ "slotmap",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "glow"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b80b98efaa8a34fce11d60dd2ce2760d5d83c373cbcc73bb87c2a3a84a54108"
 dependencies = [
  "js-sys",
  "slotmap",
@@ -882,12 +894,28 @@ checksum = "721975aa80b86096a8191ccc7cc4827bb9f3f8010419419cac819dbec29d4c27"
 dependencies = [
  "ab_glyph",
  "bytemuck",
- "glow",
+ "glow 0.8.1",
  "hashbrown",
  "image",
  "lyon_tessellation",
  "num-traits",
  "rodio",
+ "sdl2",
+ "vek",
+ "xi-unicode",
+]
+
+[[package]]
+name = "tetra"
+version = "0.6.3"
+source = "git+https://github.com/17cupsofcoffee/tetra?branch=main#078e885a33afe4c27a1b56103cab73efcedb7010"
+dependencies = [
+ "bytemuck",
+ "glow 0.9.0",
+ "hashbrown",
+ "image",
+ "lyon_tessellation",
+ "num-traits",
  "sdl2",
  "serde",
  "vek",

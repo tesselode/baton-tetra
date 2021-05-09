@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 serde = {version = "1.0.121", optional = true, features = ["derive"]}
-tetra = {version = "0.6.2", branch = "main", default-features = false}
+tetra = {git = "https://github.com/17cupsofcoffee/tetra", branch = "main", default-features = false}
 
 [features]
 serde_support = ["serde", "tetra/serde_support"]
