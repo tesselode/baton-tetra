@@ -1,2 +1,0 @@
-[workspace]
-members = ["baton-tetra", "baton-tetra-derive", "baton-tetra-test"]
