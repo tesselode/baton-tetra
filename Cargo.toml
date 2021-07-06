@@ -1,2 +1,2 @@
 [workspace]
-members = ["baton"]
+members = ["baton", "baton-tetra"]

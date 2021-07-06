@@ -26,6 +26,25 @@ impl Control {
 			previous_value: 0.0,
 		}
 	}
+
+	fn update(&mut self, raw_value: f32, deadzone: f32) {
+		self.previous_raw_value = self.raw_value;
+		self.previous_value = self.value;
+		self.raw_value = raw_value;
+		self.value = if raw_value >= deadzone {
+			raw_value
+		} else {
+			0.0
+		};
+	}
+
+	pub fn raw_value(&self) -> f32 {
+		self.raw_value
+	}
+
+	pub fn value(&self) -> f32 {
+		self.value
+	}
 }
 
 pub struct Pair;
@@ -56,5 +75,32 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 		}
 	}
 
-	pub fn update(&mut self, input_provider: impl InputProvider<GamepadId>) {}
+	pub fn set_gamepad(&mut self, gamepad: impl Into<Option<GamepadId>>) {
+		self.gamepad = gamepad.into();
+	}
+
+	pub fn update(&mut self, input_provider: impl InputProvider<GamepadId>) {
+		let gamepad = self.gamepad.as_ref();
+		for (kind, control) in &mut self.controls {
+			let raw_value = if let Some(sources) = self.config.control_mapping.get(kind) {
+				sources
+					.iter()
+					.fold(0.0, |previous, source| {
+						previous + input_provider.raw_value(*source, gamepad)
+					})
+					.min(1.0)
+			} else {
+				0.0
+			};
+			control.update(raw_value, 0.5);
+		}
+	}
+
+	pub fn control(&self, kind: C) -> &Control {
+		self.controls.get(&kind).unwrap()
+	}
+
+	pub fn pair(&self, kind: P) -> &Pair {
+		self.pairs.get(&kind).unwrap()
+	}
 }

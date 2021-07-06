@@ -23,5 +23,5 @@ impl<ControlKind> PairKind<ControlKind> for () {
 }
 
 pub trait InputProvider<GamepadId> {
-	fn raw_value(&self, source: InputSource, gamepad: Option<GamepadId>) -> f32;
+	fn raw_value(&self, source: InputSource, gamepad: Option<&GamepadId>) -> f32;
 }
