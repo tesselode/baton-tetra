@@ -46,6 +46,18 @@ impl Control {
 	pub fn value(&self) -> f32 {
 		self.value
 	}
+
+	pub fn down(&self) -> bool {
+		self.value > 0.0
+	}
+
+	pub fn pressed(&self) -> bool {
+		self.value > 0.0 && self.previous_value == 0.0
+	}
+
+	pub fn released(&self) -> bool {
+		self.value == 0.0 && self.previous_value > 0.0
+	}
 }
 
 pub struct Pair;
