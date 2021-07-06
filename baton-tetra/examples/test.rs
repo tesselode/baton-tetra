@@ -62,9 +62,10 @@ impl State<Box<dyn Error>> for MainState {
 	fn update(&mut self, ctx: &mut tetra::Context) -> Result<(), Box<dyn Error>> {
 		self.player_input.update(InputProvider(ctx));
 		println!(
-			"{}, {}",
+			"{}, {}, {:?}",
 			self.player_input.control(ControlKind::Left).value(),
-			self.player_input.control(ControlKind::Right).value()
+			self.player_input.control(ControlKind::Right).value(),
+			self.player_input.active_input_kind()
 		);
 		Ok(())
 	}

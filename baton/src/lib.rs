@@ -3,7 +3,7 @@ pub mod traits;
 
 use std::collections::HashMap;
 
-use input_source::InputSource;
+use input_source::{InputKind, InputSource};
 use traits::{ControlKind, InputProvider, PairKind};
 
 pub struct InputConfig<C: ControlKind> {
@@ -60,6 +60,7 @@ pub struct PlayerInput<C: ControlKind, P: PairKind<C>, GamepadId> {
 	gamepad: Option<GamepadId>,
 	controls: HashMap<C, Control>,
 	pairs: HashMap<P, Pair>,
+	active_input_kind: InputKind,
 }
 
 impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
@@ -72,7 +73,12 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 				.map(|kind| (*kind, Control::new()))
 				.collect(),
 			pairs: P::all().iter().map(|kind| (*kind, Pair::new())).collect(),
+			active_input_kind: InputKind::Keyboard,
 		}
+	}
+
+	pub fn active_input_kind(&self) -> InputKind {
+		self.active_input_kind
 	}
 
 	pub fn set_gamepad(&mut self, gamepad: impl Into<Option<GamepadId>>) {
@@ -80,11 +86,48 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 	}
 
 	pub fn update(&mut self, input_provider: impl InputProvider<GamepadId>) {
+		self.update_active_input_kind(&input_provider);
+		self.update_controls(&input_provider);
+	}
+
+	pub fn control(&self, kind: C) -> &Control {
+		self.controls.get(&kind).unwrap()
+	}
+
+	pub fn pair(&self, kind: P) -> &Pair {
+		self.pairs.get(&kind).unwrap()
+	}
+
+	fn update_active_input_kind(&mut self, input_provider: &impl InputProvider<GamepadId>) {
+		let mut gamepad_used = false;
+		for (_, sources) in &self.config.control_mapping {
+			for source in sources {
+				if input_provider.raw_value(*source, self.gamepad.as_ref()) > 0.5 {
+					match source.kind() {
+						InputKind::Keyboard => {
+							self.active_input_kind = InputKind::Keyboard;
+							return;
+						}
+						InputKind::Gamepad => {
+							gamepad_used = true;
+						}
+					}
+				}
+			}
+		}
+		if gamepad_used {
+			self.active_input_kind = InputKind::Gamepad;
+		}
+	}
+
+	fn update_controls(&mut self, input_provider: &impl InputProvider<GamepadId>) {
 		let gamepad = self.gamepad.as_ref();
+		let active_input_kind = self.active_input_kind;
 		for (kind, control) in &mut self.controls {
 			let raw_value = if let Some(sources) = self.config.control_mapping.get(kind) {
 				sources
 					.iter()
+					.filter(|source| source.kind() == active_input_kind)
 					.fold(0.0, |previous, source| {
 						previous + input_provider.raw_value(*source, gamepad)
 					})
@@ -94,13 +137,5 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 			};
 			control.update(raw_value, 0.5);
 		}
-	}
-
-	pub fn control(&self, kind: C) -> &Control {
-		self.controls.get(&kind).unwrap()
-	}
-
-	pub fn pair(&self, kind: P) -> &Pair {
-		self.pairs.get(&kind).unwrap()
 	}
 }

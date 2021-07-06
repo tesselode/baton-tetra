@@ -1,4 +1,10 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum InputKind {
+	Keyboard,
+	Gamepad,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Key {
 	A,
 	B,
@@ -170,6 +176,15 @@ pub enum GamepadInput {
 pub enum InputSource {
 	Key(Key),
 	GamepadInput(GamepadInput),
+}
+
+impl InputSource {
+	pub fn kind(&self) -> InputKind {
+		match self {
+			Self::Key(_) => InputKind::Keyboard,
+			Self::GamepadInput(_) => InputKind::Gamepad,
+		}
+	}
 }
 
 impl From<Key> for InputSource {
