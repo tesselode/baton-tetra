@@ -2,7 +2,7 @@ use std::{collections::HashMap, error::Error};
 
 use baton::{
 	input_source::{GamepadInput, Key},
-	InputConfig, PlayerInput,
+	DeadzoneShape, InputConfig, PlayerInput,
 };
 use baton_tetra::InputProvider;
 use tetra::{ContextBuilder, State};
@@ -21,8 +21,30 @@ impl baton::traits::ControlKind for ControlKind {
 	}
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum PairKind {
+	Move,
+}
+
+impl baton::traits::PairKind<ControlKind> for PairKind {
+	fn all<'a>() -> &'a [Self] {
+		&[Self::Move]
+	}
+
+	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind) {
+		match self {
+			PairKind::Move => (
+				ControlKind::Left,
+				ControlKind::Right,
+				ControlKind::Up,
+				ControlKind::Down,
+			),
+		}
+	}
+}
+
 struct MainState {
-	player_input: PlayerInput<ControlKind, (), usize>,
+	player_input: PlayerInput<ControlKind, PairKind, usize>,
 }
 
 impl MainState {
@@ -51,6 +73,7 @@ impl MainState {
 						control_mapping
 					},
 					deadzone: 0.25,
+					deadzone_shape: DeadzoneShape::Square,
 				});
 				player_input.set_gamepad(0);
 				player_input
@@ -62,8 +85,8 @@ impl MainState {
 impl State<Box<dyn Error>> for MainState {
 	fn update(&mut self, ctx: &mut tetra::Context) -> Result<(), Box<dyn Error>> {
 		self.player_input.update(InputProvider(ctx));
-		let control = self.player_input.control(ControlKind::Left);
-		println!("{}", control.released());
+		let pair = self.player_input.pair(PairKind::Move);
+		println!("{:?}", pair.value());
 		Ok(())
 	}
 }

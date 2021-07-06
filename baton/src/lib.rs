@@ -6,9 +6,16 @@ use std::collections::HashMap;
 use input_source::{InputKind, InputSource};
 use traits::{ControlKind, InputProvider, PairKind};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DeadzoneShape {
+	Circle,
+	Square,
+}
+
 pub struct InputConfig<C: ControlKind> {
 	pub control_mapping: HashMap<C, Vec<InputSource>>,
 	pub deadzone: f32,
+	pub deadzone_shape: DeadzoneShape,
 }
 
 pub struct Control {
@@ -26,17 +33,6 @@ impl Control {
 			value: 0.0,
 			previous_value: 0.0,
 		}
-	}
-
-	fn update(&mut self, raw_value: f32, deadzone: f32) {
-		self.previous_raw_value = self.raw_value;
-		self.previous_value = self.value;
-		self.raw_value = raw_value;
-		self.value = if raw_value >= deadzone {
-			raw_value
-		} else {
-			0.0
-		};
 	}
 
 	pub fn raw_value(&self) -> f32 {
@@ -60,11 +56,25 @@ impl Control {
 	}
 }
 
-pub struct Pair;
+pub struct Pair {
+	raw_value: (f32, f32),
+	value: (f32, f32),
+}
 
 impl Pair {
-	pub fn new() -> Self {
-		Self
+	fn new() -> Self {
+		Self {
+			raw_value: (0.0, 0.0),
+			value: (0.0, 0.0),
+		}
+	}
+
+	pub fn raw_value(&self) -> (f32, f32) {
+		self.raw_value
+	}
+
+	pub fn value(&self) -> (f32, f32) {
+		self.value
 	}
 }
 
@@ -101,6 +111,7 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 	pub fn update(&mut self, input_provider: impl InputProvider<GamepadId>) {
 		self.update_active_input_kind(&input_provider);
 		self.update_controls(&input_provider);
+		self.update_pairs();
 	}
 
 	pub fn control(&self, kind: C) -> &Control {
@@ -148,7 +159,54 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 			} else {
 				0.0
 			};
-			control.update(raw_value, self.config.deadzone);
+			control.previous_raw_value = control.raw_value;
+			control.previous_value = control.value;
+			control.raw_value = raw_value;
+			control.value = if raw_value >= self.config.deadzone {
+				raw_value
+			} else {
+				0.0
+			};
+		}
+	}
+
+	fn update_pairs(&mut self) {
+		for (pair_kind, pair) in &mut self.pairs {
+			let (left_control_kind, right_control_kind, up_control_kind, down_control_kind) =
+				pair_kind.controls();
+			let mut raw_x = self.controls.get(&right_control_kind).unwrap().raw_value()
+				- self.controls.get(&left_control_kind).unwrap().raw_value();
+			let mut raw_y = self.controls.get(&down_control_kind).unwrap().raw_value()
+				- self.controls.get(&up_control_kind).unwrap().raw_value();
+			let magnitude = (raw_x * raw_x + raw_y * raw_y).sqrt();
+			if magnitude > 1.0 {
+				raw_x /= magnitude;
+				raw_y /= magnitude;
+			}
+			let (x, y) = match self.config.deadzone_shape {
+				DeadzoneShape::Circle => {
+					if magnitude >= self.config.deadzone {
+						(raw_x, raw_y)
+					} else {
+						(0.0, 0.0)
+					}
+				}
+				DeadzoneShape::Square => {
+					let x = if raw_x.abs() >= self.config.deadzone {
+						raw_x
+					} else {
+						0.0
+					};
+					let y = if raw_y.abs() >= self.config.deadzone {
+						raw_y
+					} else {
+						0.0
+					};
+					(x, y)
+				}
+			};
+			pair.raw_value = (raw_x, raw_y);
+			pair.value = (x, y);
 		}
 	}
 }
