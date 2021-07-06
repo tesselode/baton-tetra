@@ -50,6 +50,7 @@ impl MainState {
 						);
 						control_mapping
 					},
+					deadzone: 0.25,
 				});
 				player_input.set_gamepad(0);
 				player_input

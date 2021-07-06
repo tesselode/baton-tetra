@@ -8,6 +8,7 @@ use traits::{ControlKind, InputProvider, PairKind};
 
 pub struct InputConfig<C: ControlKind> {
 	pub control_mapping: HashMap<C, Vec<InputSource>>,
+	pub deadzone: f32,
 }
 
 pub struct Control {
@@ -102,7 +103,7 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 		let mut gamepad_used = false;
 		for (_, sources) in &self.config.control_mapping {
 			for source in sources {
-				if input_provider.raw_value(*source, self.gamepad.as_ref()) > 0.5 {
+				if input_provider.raw_value(*source, self.gamepad.as_ref()) > self.config.deadzone {
 					match source.kind() {
 						InputKind::Keyboard => {
 							self.active_input_kind = InputKind::Keyboard;
@@ -135,7 +136,7 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 			} else {
 				0.0
 			};
-			control.update(raw_value, 0.5);
+			control.update(raw_value, self.config.deadzone);
 		}
 	}
 }
