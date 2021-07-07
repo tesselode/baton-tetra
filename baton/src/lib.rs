@@ -22,7 +22,6 @@ pub struct InputConfig<C: ControlKind> {
 
 pub struct Control {
 	raw_value: f32,
-	previous_raw_value: f32,
 	value: f32,
 	previous_value: f32,
 }
@@ -31,7 +30,6 @@ impl Control {
 	fn new() -> Self {
 		Self {
 			raw_value: 0.0,
-			previous_raw_value: 0.0,
 			value: 0.0,
 			previous_value: 0.0,
 		}
@@ -161,7 +159,6 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 			} else {
 				0.0
 			};
-			control.previous_raw_value = control.raw_value;
 			control.previous_value = control.value;
 			control.raw_value = raw_value;
 			control.value = if raw_value >= self.config.deadzone {
