@@ -9,32 +9,23 @@ use tetra::{ContextBuilder, State};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::ControlKind)]
 enum ControlKind {
-	Left,
-	Right,
-	Up,
-	Down,
+	MoveLeft,
+	MoveRight,
+	MoveUp,
+	MoveDown,
+	AimLeft,
+	AimRight,
+	AimUp,
+	AimDown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::PairKind)]
+#[control_kind(ControlKind)]
 enum PairKind {
+	#[controls(MoveLeft, MoveRight, MoveUp, MoveDown)]
 	Move,
-}
-
-impl baton::traits::PairKind<ControlKind> for PairKind {
-	fn all<'a>() -> &'a [Self] {
-		&[Self::Move]
-	}
-
-	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind) {
-		match self {
-			PairKind::Move => (
-				ControlKind::Left,
-				ControlKind::Right,
-				ControlKind::Up,
-				ControlKind::Down,
-			),
-		}
-	}
+	#[controls(AimLeft, AimRight, AimUp, AimDown)]
+	Aim,
 }
 
 struct MainState {
@@ -49,19 +40,19 @@ impl MainState {
 					control_mapping: {
 						let mut control_mapping = HashMap::new();
 						control_mapping.insert(
-							ControlKind::Left,
+							ControlKind::MoveLeft,
 							vec![Key::Left.into(), GamepadInput::LeftStickLeft.into()],
 						);
 						control_mapping.insert(
-							ControlKind::Right,
+							ControlKind::MoveRight,
 							vec![Key::Right.into(), GamepadInput::LeftStickRight.into()],
 						);
 						control_mapping.insert(
-							ControlKind::Up,
+							ControlKind::MoveUp,
 							vec![Key::Up.into(), GamepadInput::LeftStickUp.into()],
 						);
 						control_mapping.insert(
-							ControlKind::Down,
+							ControlKind::MoveDown,
 							vec![Key::Down.into(), GamepadInput::LeftStickDown.into()],
 						);
 						control_mapping
