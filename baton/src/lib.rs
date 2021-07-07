@@ -1,6 +1,8 @@
 pub mod input_source;
 pub mod traits;
 
+pub use baton_derive::ControlKind;
+
 use std::collections::HashMap;
 
 use input_source::{InputKind, InputSource};

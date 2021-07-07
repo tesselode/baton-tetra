@@ -7,18 +7,12 @@ use baton::{
 use baton_tetra::InputProvider;
 use tetra::{ContextBuilder, State};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::ControlKind)]
 enum ControlKind {
 	Left,
 	Right,
 	Up,
 	Down,
-}
-
-impl baton::traits::ControlKind for ControlKind {
-	fn all<'a>() -> &'a [Self] {
-		&[Self::Left, Self::Right, Self::Up, Self::Down]
-	}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
