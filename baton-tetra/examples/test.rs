@@ -15,7 +15,7 @@ enum ControlKind {
 	Down,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::PairKind)]
 enum PairKind {
 	Move,
 }

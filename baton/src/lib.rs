@@ -1,7 +1,7 @@
 pub mod input_source;
 pub mod traits;
 
-pub use baton_derive::ControlKind;
+pub use baton_derive::{ControlKind, PairKind};
 
 use std::collections::HashMap;
 
