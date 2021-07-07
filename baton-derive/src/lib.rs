@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Ident};
+use syn::{spanned::Spanned, Data, DeriveInput};
 
 extern crate proc_macro;
 
@@ -8,25 +8,33 @@ extern crate proc_macro;
 pub fn control_kind_derive(input: TokenStream) -> TokenStream {
 	let ast: DeriveInput = syn::parse(input).unwrap();
 	let name = ast.ident;
-	let control_kind_idents: Vec<Ident> = match ast.data {
-		Data::Enum(data_enum) => data_enum
-			.variants
-			.iter()
-			.map(|variant| {
+	match ast.data {
+		Data::Enum(data_enum) => {
+			let mut control_kind_idents = vec![];
+			for variant in data_enum.variants {
 				if variant.fields.len() > 0 {
-					panic!("Can only derive ControlKind for fieldless enums")
+					return syn::Error::new(
+						variant.span(),
+						"Can only derive ControlKind for enums with fieldless variants",
+					)
+					.to_compile_error()
+					.into();
 				}
-				variant.ident.clone()
-			})
-			.collect(),
-		_ => panic!("Can only derive ControlKind for enums"),
-	};
-	let output = quote! {
-		impl baton::traits::ControlKind for #name {
-			fn all<'a>() -> &'a [Self] {
-				&[#(Self::#control_kind_idents),*]
+				control_kind_idents.push(variant.ident.clone());
 			}
+			(quote! {
+				impl baton::traits::ControlKind for #name {
+					fn all<'a>() -> &'a [Self] {
+						&[#(Self::#control_kind_idents),*]
+					}
+				}
+			})
+			.into()
 		}
-	};
-	output.into()
+		_ => {
+			return syn::Error::new(name.span(), "Can only derive ControlKind for enums")
+				.to_compile_error()
+				.into();
+		}
+	}
 }
