@@ -39,6 +39,59 @@ pub fn control_kind_derive(input: TokenStream) -> TokenStream {
 	}
 }
 
+#[proc_macro_derive(PairKind, attributes(control_kind, controls))]
+pub fn pair_kind_derive(input: TokenStream) -> TokenStream {
+	let ast: DeriveInput = syn::parse(input).unwrap();
+	let name = ast.ident.clone();
+	let control_kind_enum_ident = match control_kind_enum_ident(&ast) {
+		Ok(ident) => ident,
+		Err(err) => return err.to_compile_error().into(),
+	};
+	match ast.data {
+		Data::Enum(data_enum) => {
+			let mut pair_kind_idents = vec![];
+			let mut control_kind_idents = vec![];
+			for variant in &data_enum.variants {
+				if variant.fields.len() > 0 {
+					return syn::Error::new(
+						variant.span(),
+						"can only derive PairKind for enums with fieldless variants",
+					)
+					.to_compile_error()
+					.into();
+				}
+				pair_kind_idents.push(variant.ident.clone());
+				let idents = match control_kind_idents_for_pair_kind_variant(variant) {
+					Ok(idents) => idents,
+					Err(err) => return err.to_compile_error().into(),
+				};
+				control_kind_idents.push(idents);
+			}
+			(quote! {
+				impl baton::traits::PairKind<ControlKind> for PairKind {
+					fn all<'a>() -> &'a [Self] {
+						&[#(Self::#pair_kind_idents),*]
+					}
+
+					fn controls(&self) -> (#control_kind_enum_ident, #control_kind_enum_ident, #control_kind_enum_ident, #control_kind_enum_ident) {
+						match self {
+							#(Self::#pair_kind_idents => (
+								#(#control_kind_enum_ident::#control_kind_idents),*
+							)),*
+						}
+					}
+				}
+			})
+			.into()
+		}
+		_ => {
+			return syn::Error::new(name.span(), "can only derive PairKind for enums")
+				.to_compile_error()
+				.into();
+		}
+	}
+}
+
 fn control_kind_enum_ident(ast: &DeriveInput) -> syn::Result<Ident> {
 	let meta = ast
 		.attrs
@@ -105,60 +158,5 @@ fn control_kind_idents_for_pair_kind_variant(variant: &Variant) -> syn::Result<V
 			Ok(idents)
 		}
 		_ => Err(syn::Error::new(meta.span(), "invalid controls attribute")),
-	}
-}
-
-#[proc_macro_derive(PairKind, attributes(control_kind, controls))]
-pub fn pair_kind_derive(input: TokenStream) -> TokenStream {
-	let ast: DeriveInput = syn::parse(input).unwrap();
-	let name = ast.ident.clone();
-	let control_kind_enum_ident = match control_kind_enum_ident(&ast) {
-		Ok(ident) => ident,
-		Err(err) => return err.to_compile_error().into(),
-	};
-	match ast.data {
-		Data::Enum(data_enum) => {
-			let mut pair_kind_idents = vec![];
-			for variant in &data_enum.variants {
-				if variant.fields.len() > 0 {
-					return syn::Error::new(
-						variant.span(),
-						"can only derive PairKind for enums with fieldless variants",
-					)
-					.to_compile_error()
-					.into();
-				}
-				pair_kind_idents.push(variant.ident.clone());
-			}
-			let mut control_kind_idents = vec![];
-			for variant in &data_enum.variants {
-				let ident = match control_kind_idents_for_pair_kind_variant(variant) {
-					Ok(ident) => ident,
-					Err(err) => return err.to_compile_error().into(),
-				};
-				control_kind_idents.push(ident);
-			}
-			(quote! {
-				impl baton::traits::PairKind<ControlKind> for PairKind {
-					fn all<'a>() -> &'a [Self] {
-						&[#(Self::#pair_kind_idents),*]
-					}
-
-					fn controls(&self) -> (#control_kind_enum_ident, #control_kind_enum_ident, #control_kind_enum_ident, #control_kind_enum_ident) {
-						match self {
-							#(Self::#pair_kind_idents => (
-								#(#control_kind_enum_ident::#control_kind_idents),*
-							)),*
-						}
-					}
-				}
-			})
-			.into()
-		}
-		_ => {
-			return syn::Error::new(name.span(), "can only derive PairKind for enums")
-				.to_compile_error()
-				.into();
-		}
 	}
 }
