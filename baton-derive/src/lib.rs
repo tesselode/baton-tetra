@@ -91,15 +91,15 @@ pub fn pair_kind_derive(input: TokenStream) -> TokenStream {
 }
 
 fn control_kind_enum_ident(ast: &DeriveInput) -> syn::Result<Ident> {
-	let meta = ast
+	let control_kind_attr = ast
 		.attrs
 		.iter()
 		.find(|attr| attr.path.is_ident("control_kind"))
 		.ok_or(syn::Error::new(
 			ast.ident.span(),
 			"missing control_kind attribute",
-		))?
-		.parse_meta()?;
+		))?;
+	let meta = control_kind_attr.parse_meta()?;
 	let list = match meta {
 		Meta::List(list) => list,
 		_ => {
@@ -109,30 +109,29 @@ fn control_kind_enum_ident(ast: &DeriveInput) -> syn::Result<Ident> {
 			))
 		}
 	};
-	list.nested
-		.first()
-		.map(|nested_meta| match nested_meta {
-			NestedMeta::Meta(meta) => meta.path().get_ident(),
-			_ => None,
-		})
-		.flatten()
-		.cloned()
-		.ok_or(syn::Error::new(
-			list.span(),
-			"control_kind attribute should contain a control kind identifier",
-		))
+	if let Some(nested_meta) = list.nested.first() {
+		if let NestedMeta::Meta(meta) = nested_meta {
+			if let Some(ident) = meta.path().get_ident() {
+				return Ok(ident.clone());
+			}
+		}
+	}
+	Err(syn::Error::new(
+		list.span(),
+		"control_kind attribute should contain a control kind identifier",
+	))
 }
 
 fn control_kind_idents_for_pair_kind_variant(variant: &Variant) -> syn::Result<Vec<Ident>> {
-	let meta = variant
+	let controls_attr = variant
 		.attrs
 		.iter()
 		.find(|attr| attr.path.is_ident("controls"))
 		.ok_or(syn::Error::new(
 			variant.span(),
 			"missing controls attribute",
-		))?
-		.parse_meta()?;
+		))?;
+	let meta = controls_attr.parse_meta()?;
 	let list = match meta {
 		Meta::List(list) => list,
 		_ => return Err(syn::Error::new(meta.span(), "invalid controls attribute")),
