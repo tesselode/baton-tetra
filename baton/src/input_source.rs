@@ -1,10 +1,12 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum InputKind {
 	Keyboard,
 	Gamepad,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Key {
 	A,
 	B,
@@ -144,6 +146,7 @@ pub enum Key {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum GamepadInput {
 	LeftStickLeft,
 	LeftStickRight,
@@ -173,6 +176,7 @@ pub enum GamepadInput {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum InputSource {
 	Key(Key),
 	GamepadInput(GamepadInput),

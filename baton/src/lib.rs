@@ -9,17 +9,21 @@ use input_source::{InputKind, InputSource};
 use traits::{ControlKind, InputProvider, PairKind};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DeadzoneShape {
 	Circle,
 	Square,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct InputConfig<C: ControlKind> {
 	pub control_mapping: HashMap<C, Vec<InputSource>>,
 	pub deadzone: f32,
 	pub deadzone_shape: DeadzoneShape,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Control {
 	raw_value: f32,
 	value: f32,
@@ -56,6 +60,7 @@ impl Control {
 	}
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Pair {
 	raw_value: (f32, f32),
 	value: (f32, f32),
@@ -78,6 +83,7 @@ impl Pair {
 	}
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct PlayerInput<C: ControlKind, P: PairKind<C>, GamepadId> {
 	config: InputConfig<C>,
 	gamepad: Option<GamepadId>,
