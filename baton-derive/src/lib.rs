@@ -4,6 +4,7 @@ use syn::{spanned::Spanned, Data, DeriveInput, Ident, Meta, NestedMeta, Variant}
 
 extern crate proc_macro;
 
+/** Derives `ControlKind` for a fieldless enum. */
 #[proc_macro_derive(ControlKind)]
 pub fn control_kind_derive(input: TokenStream) -> TokenStream {
 	let ast: DeriveInput = syn::parse(input).unwrap();
@@ -38,6 +39,43 @@ pub fn control_kind_derive(input: TokenStream) -> TokenStream {
 	.into()
 }
 
+/**
+Derives `StickKind` for a fieldless enum.
+
+The enum should have a `control_kind` attribute in the form
+`control_kind(ControlKindIdent)`, where `ControlKindIdent` is the
+identifier of an enum that implements `ControlKind`.
+
+Each variant should have a `controls` attribute in the form
+`controls(Left, Right, Up, Down)`, where `Left`, `Right`, `Up`, and
+`Down` are the names of the variants of the `ControlKind` enum
+corresponding to the controls that make up the virtual analog stick.
+
+## Example
+
+```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::ControlKind)]
+enum ControlKind {
+	MoveLeft,
+	MoveRight,
+	MoveUp,
+	MoveDown,
+	AimLeft,
+	AimRight,
+	AimUp,
+	AimDown,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::StickKind)]
+#[control_kind(ControlKind)]
+enum StickKind {
+	#[controls(MoveLeft, MoveRight, MoveUp, MoveDown)]
+	Move,
+	#[controls(AimLeft, AimRight, AimUp, AimDown)]
+	Aim,
+}
+```
+*/
 #[proc_macro_derive(StickKind, attributes(control_kind, controls))]
 pub fn stick_kind_derive(input: TokenStream) -> TokenStream {
 	let ast: DeriveInput = syn::parse(input).unwrap();
