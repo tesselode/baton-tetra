@@ -1,10 +1,17 @@
+/*! Types related to input kinds and sources. */
+
+/** A kind of input. */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum InputKind {
+	/** Input coming from a keyboard. */
 	Keyboard,
+	/** Input coming from a gamepad. */
 	Gamepad,
 }
 
+/** A keyboard key. */
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Key {
@@ -145,6 +152,13 @@ pub enum Key {
 	Underscore,
 }
 
+/**
+A gamepad input.
+
+Note that each direction of an analog stick axis is considered
+a separate input.
+*/
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum GamepadInput {
@@ -175,14 +189,22 @@ pub enum GamepadInput {
 	Guide,
 }
 
+/**
+An input source.
+
+These can be used to provide data to a [`Control`](crate::Control).
+*/
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum InputSource {
+	/** A keyboard key. */
 	Key(Key),
+	/** A gamepad input. */
 	GamepadInput(GamepadInput),
 }
 
 impl InputSource {
+	/** Returns the kind of input this source is. */
 	pub fn kind(&self) -> InputKind {
 		match self {
 			Self::Key(_) => InputKind::Keyboard,
