@@ -7,6 +7,70 @@ gamepad controls. It combines individual "input sources" (such as keys and
 gamepad triggers) into game-specific controls, using opinionated defaults to
 determine the final state of each control.
 
+## Example
+
+```
+use std::collections::HashMap;
+use baton::{DeadzoneShape, GamepadInput, InputConfig, Key, PlayerInput};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::ControlKind)]
+enum ControlKind {
+	Left,
+	Right,
+	Up,
+	Down,
+	Jump,
+	Run,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::StickKind)]
+#[control_kind(ControlKind)]
+enum StickKind {
+	#[controls(Left, Right, Up, Down)]
+	Move,
+}
+
+let mut input = PlayerInput::new(InputConfig {
+	control_mapping: {
+		let mut control_mapping = HashMap::new();
+		control_mapping.insert(
+			ControlKind::Left,
+			vec![Key::A.into(), GamepadInput::LeftStickLeft.into()],
+		);
+		control_mapping.insert(
+			ControlKind::Right,
+			vec![Key::D.into(), GamepadInput::LeftStickRight.into()],
+		);
+		control_mapping.insert(
+			ControlKind::Up,
+			vec![Key::W.into(), GamepadInput::LeftStickUp.into()],
+		);
+		control_mapping.insert(
+			ControlKind::Down,
+			vec![Key::S.into(), GamepadInput::LeftStickDown.into()],
+		);
+		control_mapping.insert(
+			ControlKind::Jump,
+			vec![Key::X.into(), GamepadInput::A.into()],
+		);
+		control_mapping.insert(
+			ControlKind::Run,
+			vec![Key::Z.into(), GamepadInput::B.into()],
+		);
+		control_mapping
+	},
+	deadzone: 0.25,
+	deadzone_shape: DeadzoneShape::Circle,
+});
+
+// in your update code:
+input.update(baton_tetra::InputProvider(ctx));
+let (move_x, move_y) = input.stick(StickKind::Move).value();
+if input.control(ControlKind::Jump).pressed() {
+	// jumping code
+}
+```
+
 ## Overview
 
 - An [`InputSource`] is a single source of data from a physical input device.
@@ -42,14 +106,14 @@ pub mod input_source;
 pub mod traits;
 
 pub use input_source::*;
-pub use traits::*;
+pub use traits::{ControlKind, StickKind};
 
 pub use baton_derive::{ControlKind, StickKind};
 
 use std::collections::HashMap;
 
 use input_source::{InputKind, InputSource};
-use traits::{ControlKind, InputProvider, StickKind};
+use traits::InputProvider;
 
 /** The shape of a deadzone for a `Stick`. */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
