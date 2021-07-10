@@ -4,12 +4,12 @@ pub mod traits;
 pub use input_source::*;
 pub use traits::*;
 
-pub use baton_derive::{ControlKind, PairKind};
+pub use baton_derive::{ControlKind, StickKind};
 
 use std::collections::HashMap;
 
 use input_source::{InputKind, InputSource};
-use traits::{ControlKind, InputProvider, PairKind};
+use traits::{ControlKind, InputProvider, StickKind};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -64,12 +64,12 @@ impl Control {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Pair {
+pub struct Stick {
 	raw_value: (f32, f32),
 	value: (f32, f32),
 }
 
-impl Pair {
+impl Stick {
 	fn new() -> Self {
 		Self {
 			raw_value: (0.0, 0.0),
@@ -87,15 +87,15 @@ impl Pair {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct PlayerInput<C: ControlKind, P: PairKind<C>, GamepadId> {
+pub struct PlayerInput<C: ControlKind, P: StickKind<C>, GamepadId> {
 	config: InputConfig<C>,
 	gamepad: Option<GamepadId>,
 	controls: HashMap<C, Control>,
-	pairs: HashMap<P, Pair>,
+	sticks: HashMap<P, Stick>,
 	active_input_kind: InputKind,
 }
 
-impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
+impl<C: ControlKind, P: StickKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 	pub fn new(config: InputConfig<C>) -> Self {
 		Self {
 			config,
@@ -104,7 +104,7 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 				.iter()
 				.map(|kind| (*kind, Control::new()))
 				.collect(),
-			pairs: P::all().iter().map(|kind| (*kind, Pair::new())).collect(),
+			sticks: P::all().iter().map(|kind| (*kind, Stick::new())).collect(),
 			active_input_kind: InputKind::Keyboard,
 		}
 	}
@@ -120,15 +120,15 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 	pub fn update(&mut self, input_provider: impl InputProvider<GamepadId>) {
 		self.update_active_input_kind(&input_provider);
 		self.update_controls(&input_provider);
-		self.update_pairs();
+		self.update_sticks();
 	}
 
 	pub fn control(&self, kind: C) -> &Control {
 		self.controls.get(&kind).unwrap()
 	}
 
-	pub fn pair(&self, kind: P) -> &Pair {
-		self.pairs.get(&kind).unwrap()
+	pub fn stick(&self, kind: P) -> &Stick {
+		self.sticks.get(&kind).unwrap()
 	}
 
 	fn update_active_input_kind(&mut self, input_provider: &impl InputProvider<GamepadId>) {
@@ -178,10 +178,10 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 		}
 	}
 
-	fn update_pairs(&mut self) {
-		for (pair_kind, pair) in &mut self.pairs {
+	fn update_sticks(&mut self) {
+		for (stick_kind, stick) in &mut self.sticks {
 			let (left_control_kind, right_control_kind, up_control_kind, down_control_kind) =
-				pair_kind.controls();
+				stick_kind.controls();
 			let mut raw_x = self.controls.get(&right_control_kind).unwrap().raw_value()
 				- self.controls.get(&left_control_kind).unwrap().raw_value();
 			let mut raw_y = self.controls.get(&down_control_kind).unwrap().raw_value()
@@ -213,8 +213,8 @@ impl<C: ControlKind, P: PairKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 					(x, y)
 				}
 			};
-			pair.raw_value = (raw_x, raw_y);
-			pair.value = (x, y);
+			stick.raw_value = (raw_x, raw_y);
+			stick.value = (x, y);
 		}
 	}
 }

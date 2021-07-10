@@ -19,9 +19,9 @@ enum ControlKind {
 	AimDown,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::PairKind)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, baton::StickKind)]
 #[control_kind(ControlKind)]
-enum PairKind {
+enum StickKind {
 	#[controls(MoveLeft, MoveRight, MoveUp, MoveDown)]
 	Move,
 	#[controls(AimLeft, AimRight, AimUp, AimDown)]
@@ -29,7 +29,7 @@ enum PairKind {
 }
 
 struct MainState {
-	player_input: PlayerInput<ControlKind, PairKind, usize>,
+	player_input: PlayerInput<ControlKind, StickKind, usize>,
 }
 
 impl MainState {
@@ -70,8 +70,8 @@ impl MainState {
 impl State<Box<dyn Error>> for MainState {
 	fn update(&mut self, ctx: &mut tetra::Context) -> Result<(), Box<dyn Error>> {
 		self.player_input.update(InputProvider(ctx));
-		let pair = self.player_input.pair(PairKind::Move);
-		println!("{:?}", pair.value());
+		let stick = self.player_input.stick(StickKind::Move);
+		println!("{:?}", stick.value());
 		Ok(())
 	}
 }

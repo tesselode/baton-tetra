@@ -6,13 +6,13 @@ pub trait ControlKind: Sized + Copy + Eq + Hash {
 	fn all<'a>() -> &'a [Self];
 }
 
-pub trait PairKind<ControlKind>: Sized + Copy + Eq + Hash {
+pub trait StickKind<ControlKind>: Sized + Copy + Eq + Hash {
 	fn all<'a>() -> &'a [Self];
 
 	fn controls(&self) -> (ControlKind, ControlKind, ControlKind, ControlKind);
 }
 
-impl<ControlKind> PairKind<ControlKind> for () {
+impl<ControlKind> StickKind<ControlKind> for () {
 	fn all<'a>() -> &'a [Self] {
 		&[]
 	}
