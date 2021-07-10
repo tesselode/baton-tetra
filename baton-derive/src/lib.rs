@@ -73,7 +73,7 @@ pub fn stick_kind_derive(input: TokenStream) -> TokenStream {
 		control_kind_idents.push(idents);
 	}
 	(quote! {
-		impl baton::traits::StickKind<ControlKind> for StickKind {
+		impl baton::traits::StickKind<ControlKind> for #name {
 			fn all<'a>() -> &'a [Self] {
 				&[#(Self::#stick_kind_idents),*]
 			}
