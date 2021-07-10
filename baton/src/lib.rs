@@ -108,6 +108,7 @@ pub mod traits;
 pub use input_source::*;
 pub use traits::{ControlKind, StickKind};
 
+#[cfg(feature = "derive")]
 pub use baton_derive::{ControlKind, StickKind};
 
 use std::collections::HashMap;
