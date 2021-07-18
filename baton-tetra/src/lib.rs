@@ -219,6 +219,16 @@ impl<'a> baton::traits::InputProvider<usize> for InputProvider<'a> {
 							tetra::input::GamepadAxis::RightStickY,
 						)
 						.max(0.0),
+						GamepadInput::LeftTrigger => tetra::input::get_gamepad_axis_position(
+							self.0,
+							*gamepad,
+							tetra::input::GamepadAxis::LeftTrigger,
+						),
+						GamepadInput::RightTrigger => tetra::input::get_gamepad_axis_position(
+							self.0,
+							*gamepad,
+							tetra::input::GamepadAxis::RightTrigger,
+						),
 						input => {
 							if tetra::input::is_gamepad_button_down(
 								self.0,
