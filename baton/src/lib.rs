@@ -216,15 +216,15 @@ impl Stick {
 
 /** Tracks virtual inputs for one player. */
 #[derive(Debug, Clone, PartialEq)]
-pub struct PlayerInput<C: ControlKind, P: StickKind<C>, GamepadId> {
+pub struct PlayerInput<C: ControlKind, S: StickKind<C>, GamepadId> {
 	config: InputConfig<C>,
 	gamepad: Option<GamepadId>,
 	controls: HashMap<C, Control>,
-	sticks: HashMap<P, Stick>,
+	sticks: HashMap<S, Stick>,
 	active_input_kind: InputKind,
 }
 
-impl<C: ControlKind, P: StickKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
+impl<C: ControlKind, S: StickKind<C>, GamepadId> PlayerInput<C, S, GamepadId> {
 	/** Creates a new `PlayerInput` with the given settings. */
 	pub fn new(config: InputConfig<C>) -> Self {
 		Self {
@@ -234,7 +234,7 @@ impl<C: ControlKind, P: StickKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 				.iter()
 				.map(|kind| (*kind, Control::new()))
 				.collect(),
-			sticks: P::all().iter().map(|kind| (*kind, Stick::new())).collect(),
+			sticks: S::all().iter().map(|kind| (*kind, Stick::new())).collect(),
 			active_input_kind: InputKind::Keyboard,
 		}
 	}
@@ -263,7 +263,7 @@ impl<C: ControlKind, P: StickKind<C>, GamepadId> PlayerInput<C, P, GamepadId> {
 	}
 
 	/** Returns a reference to the [`Stick`] of the given kind. */
-	pub fn stick(&self, kind: P) -> &Stick {
+	pub fn stick(&self, kind: S) -> &Stick {
 		self.sticks.get(&kind).unwrap()
 	}
 
